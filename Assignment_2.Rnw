@@ -1,0 +1,111 @@
+\documentclass{article}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title {Bitcoin Exchange Rate} 
+\author { Shreekar Gonguntla Reddy 
+\\ School of Information Technology 
+\\ Illinois State University
+\texttt{sgonugu@ilstu.edu}}
+\date{\today}
+
+\maketitle
+
+\begin{abstract}
+\textbf{Bitcoin} is the first decentralized digital currency.a type of digital currency that is created and maintained electronically. Bitcoin is not a physical currency like dollars or euros, but it can be used in the same way to buy things electronically.
+\end{abstract}
+
+\section{Introduction}
+Bitcoin was created by a software engineer \textbf{Satoshi Nakamoto} who proposed it as an electronic payment system based on mathematical proof. Bitcoins have a number of advantages, bitcoins are transferred directly person to person, so there would be not involvement of a bank or any third party, which results in low transfer fees. Also, it can be used anywhere across the world, as it is a global currency and does not depend on the geographic location of the user. The community responsible for authorizing the transactions and securing the networks are called miners. 
+
+There are several currency exchanges available to buy and sell bitcoin, like dollar, euro, yang, etc. Bitcoins are stored on a individuals personal devices like mobile or system on their digital wallets. Bitcoins can be used to purchase anything online, just like the way you use dollars, euro, etc. Bitcoins are the best ways for a business to minimize their transition fee and also it does not charge them any additional charges for accepting bitcoins.
+
+Bitcoin price is calculated on the basis of supply and demand, when the demand increases the price increases, and when demand is low, then the price falls. If new bitcoins are created and introduced then they will be introduced with less price, and their price will rise only once the demand increases.
+
+\section{Exchange Rate Analysis}
+For our observation we are going to gather data from Quandl () for the last 30 days of bitcoin exchange rate and analyze the trends.
+
+<<>>=
+# Extracting data from Quandl
+
+library(Quandl)
+mydata <- Quandl("BITCOIN/BITSTAMPUSD", authcode="PxxFfireRAiixyqysWeJ")
+@
+
+The above shows us how we can get the data from Quandl into R for our analysis. To get the data from Quandl API we need to know just two small things, the dataset name and the authorization code which is unique for each user. We try and load all the data into a data frame in R for our further analysis. The data extracted will contain all the rows and columns without any restrictions. We need to perform data cleaning operations to get the data that we want.
+
+
+<<>>=
+#for no. of rows and columns
+dim(mydata)
+
+#Displaying the data from Quandl
+head(mydata,10)
+@
+
+The above command displays only first 10 rows from Quandl. The data that we get from Quandl is generally not the final data there might be many rows or columns that we wont need. Here, we need the data just for columns \emph{Volume (BTC),Volume Currency,Weighted Price}, rest columns we dont want the data and also we wnat to check for last 30 days, so we need to filter out the data and take only the lst 30 days data
+
+\subsection {Scrubing of Data}
+
+Generally all the data that you get is not gerenally useful to you. Similarly, in our case we need just last 30 days data and only the Volume BTC, Volume Currency and Weighted Price. 
+
+<<>>=
+
+#Restricting data to just the first 30 rows
+mydata <- mydata[1:30,]
+
+#Selecting only the required columns
+mydata1 <- mydata[,c(1,6:8)]
+
+#Renaming the column names
+colnames(mydata1) <- c("Date","Volume_BTC","Volume_Currency","Weighted_Price")
+
+#writing the data into csv file
+write.csv(mydata,"Bitcoin_exchange_rate.csv")
+@
+
+Using the above code we have selected the last 30 days data and also just for the columns we want. mydata1 is now holding the final data that we want for this analysis. Also we would want the data in csv format so that we can provide it as a support for our analysis and also help others in reproducing the result.
+
+\subsection{Exploring of Data}
+Exploring the data that we have gathered is as important as analyzing the data. We need to know the data we have and the format of the data and the data types and the amount of data we have.
+<<>>=
+summary(mydata1)
+@
+
+The above code tells us the summary of the data. It tells us the max,min,mean values,etc. for the dataset and also other properties of the data.
+
+<<>>=
+str(mydata1)
+@
+
+The above code tells us the data types for different columns and the form in which the data is present. Here we see that the Date column is in Date data type while the other three are in number.
+
+<<>>=
+head(mydata1,10)
+@
+
+The above code displayes the first 10 rows of data.
+
+\subsection{Plotting of Graph}
+
+Just getting tabular data is never enough for analysis. Analyzing requires proper understanding of the data, which we can usually get from visualizations.
+
+<<fig=TRUE,tidy=T>>=
+library(ggplot2)
+library(scales)
+
+#Plotting of Graph
+dd <- ggplot(data=mydata1, aes(x=Date)) + ylab(" ")+
+  geom_line(aes(y = Volume_BTC, colour = "Volume_BTC")) + 
+  geom_line(aes(y = Volume_Currency, colour = "Volume_Currency")) +
+  geom_line(aes(y = Weighted_Price,color = "Weighted Price")) +
+  scale_y_continuous(labels=comma)+scale_colour_hue(name="Bitcoin Metrics")
+
+dd + ggtitle("Bitcoin Exchange Rate (last 30 days)")
+@
+
+The above graph shows the \emph{Volume BTC,Volume Currency and Weighted price} trends for the last 30 days. We see that the Volume Currency values are fluctuaing in millions and the average value od Volume Currency is \Sexpr{round(mean(mydata1$Volume_Currency),2)}. The Volume BTC also has fluctuating trends with a average value of \Sexpr{round(mean(mydata1$Volume_BTC),2)}, the average value of weigthed price is \Sexpr{round(mean(mydata1$Weighted_Price),2)}. 
+
+The above graph tells us the trends and the differences in the values of the exchange metrics. We can clearly make out from it that the volume usage of currency is very high compared to the volume usage of the BTC. 
+\end{document}
